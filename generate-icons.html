@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<p>開啟此頁面後點擊按鈕產生 PWA 圖示，然後右鍵另存為 icons/icon-192.png 和 icons/icon-512.png</p>
+<canvas id="c192" width="192" height="192" style="margin:8px;border:1px solid #ccc"></canvas>
+<canvas id="c512" width="512" height="512" style="margin:8px;border:1px solid #ccc"></canvas>
+<br>
+<a id="dl192" download="icon-192.png">下載 192x192</a> &nbsp;
+<a id="dl512" download="icon-512.png">下載 512x512</a>
+<script>
+function drawIcon(canvas, size) {
+  const ctx = canvas.getContext('2d');
+  const s = size;
+
+  // Background
+  ctx.fillStyle = '#2563EB';
+  roundRect(ctx, 0, 0, s, s, s * 0.18);
+  ctx.fill();
+
+  // House
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.moveTo(s * 0.5, s * 0.12);
+  ctx.lineTo(s * 0.92, s * 0.46);
+  ctx.lineTo(s * 0.84, s * 0.46);
+  ctx.lineTo(s * 0.84, s * 0.82);
+  ctx.lineTo(s * 0.16, s * 0.82);
+  ctx.lineTo(s * 0.16, s * 0.46);
+  ctx.lineTo(s * 0.08, s * 0.46);
+  ctx.closePath();
+  ctx.fill();
+
+  // Door
+  ctx.fillStyle = '#2563EB';
+  ctx.fillRect(s * 0.41, s * 0.58, s * 0.18, s * 0.24);
+
+  // Green circle for checkmark
+  ctx.fillStyle = '#10B981';
+  ctx.beginPath();
+  ctx.arc(s * 0.75, s * 0.75, s * 0.18, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Checkmark
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = s * 0.04;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(s * 0.63, s * 0.75);
+  ctx.lineTo(s * 0.72, s * 0.84);
+  ctx.lineTo(s * 0.87, s * 0.67);
+  ctx.stroke();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+const c192 = document.getElementById('c192');
+const c512 = document.getElementById('c512');
+drawIcon(c192, 192);
+drawIcon(c512, 512);
+
+document.getElementById('dl192').href = c192.toDataURL('image/png');
+document.getElementById('dl512').href = c512.toDataURL('image/png');
+</script>
+</body>
+</html>

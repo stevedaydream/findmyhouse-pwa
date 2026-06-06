@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>請我喝杯咖啡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080807;
+    --surface: #111110;
+    --border: #2a2820;
+    --amber: #c8813a;
+    --amber-glow: #e8973e;
+    --amber-pale: #f4c882;
+    --cream: #f0e8d8;
+    --muted: #6b6355;
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 7rem 0 5rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(200,129,58,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    border: 1px solid rgba(200,129,58,0.3);
+    padding: 0.4rem 1rem;
+    margin-bottom: 2.5rem;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--cream);
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--amber-pale);
+  }
+
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    line-height: 1.8;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .divider {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--amber), transparent);
+    margin: 3rem auto;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    padding-bottom: 6rem;
+  }
+
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.3s;
+    animation: fadeUp 0.8s ease both;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.35s; }
+  .card:nth-child(2) { animation-delay: 0.45s; transform: translateY(-12px); }
+  .card:nth-child(3) { animation-delay: 0.55s; }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top, rgba(200,129,58,0.06) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover {
+    border-color: rgba(200,129,58,0.5);
+    transform: translateY(-4px) !important;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 1.4rem;
+    filter: grayscale(0.2);
+  }
+
+  .card-tier {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.8rem;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-amount {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: var(--amber-pale);
+    line-height: 1;
+    margin-bottom: 1.2rem;
+  }
+
+  .card-amount span {
+    font-size: 1.2rem;
+    font-weight: 300;
+    vertical-align: super;
+    color: var(--amber);
+  }
+
+  .card-desc {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+    flex: 1;
+    margin-bottom: 2rem;
+  }
+
+  .card-btn {
+    display: block;
+    width: 100%;
+    padding: 0.8rem;
+    background: transparent;
+    border: 1px solid rgba(200,129,58,0.4);
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover .card-btn {
+    background: var(--amber);
+    color: var(--bg);
+    border-color: var(--amber);
+  }
+
+  /* featured card */
+  .card.featured {
+    border-color: rgba(200,129,58,0.35);
+  }
+
+  .card.featured .card-tier::before {
+    content: '★ ';
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding-bottom: 4rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    animation: fadeUp 0.8s ease 0.7s both;
+  }
+
+  .footer a {
+    color: var(--amber);
+    text-decoration: none;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(2) {
+    animation: featuredIn 0.8s ease 0.45s both;
+  }
+
+  @keyframes featuredIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(-12px); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+    .card:nth-child(2) {
+      transform: translateY(0) !important;
+      animation: fadeUp 0.8s ease 0.45s both;
+    }
+    .card:hover {
+      transform: translateY(-4px) !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <section class="hero">
+    <div class="badge">贊助支持</div>
+    <h1 class="hero-title">請我喝杯<em>咖啡</em></h1>
+    <p class="hero-sub">
+      你的支持是我持續創作的動力<br>
+      每一份贊助都讓我能做更多有趣的事
+    </p>
+    <div class="divider"></div>
+  </section>
+
+  <section class="cards">
+    <a class="card" href="https://p.ecpay.com.tw/E6CB764" target="_blank" rel="noopener">
+      <div class="card-icon">☕</div>
+      <div class="card-tier">小小心意</div>
+      <div class="card-title">請我喝咖啡</div>
+      <div class="card-amount"><span>NT$</span>50</div>
+      <div class="card-desc">一杯美式的溫度<br>謝謝你的小小支持</div>
+      <div class="card-btn">贊助 →</div>
+    </a>
+
+    <a class="card featured" href="https://p.ecpay.com.tw/EFC53E1" target="_blank" rel="noopener">
+      <div class="card-icon">🍱</div>
+      <div class="card-tier">最受歡迎</div>
+      <div class="card-title">請我吃便當</div>
+      <div class="card-amount"><span>NT$</span>150</div>
+      <div class="card-desc">讓我吃飽飽繼續努力<br>你的支持超級有感</div>
+      <div class="card-btn">贊助 →</div>
+    </a>
+
+    <a class="card" href="https://p.ecpay.com.tw/F01156E" target="_blank" rel="noopener">
+      <div class="card-icon">🎁</div>
+      <div class="card-tier">大力支持</div>
+      <div class="card-title">大力贊助</div>
+      <div class="card-amount"><span>NT$</span>500</div>
+      <div class="card-desc">你是最棒的！<br>感謝你的慷慨相挺</div>
+      <div class="card-btn">贊助 →</div>
+    </a>
+  </section>
+
+  <footer class="footer">
+    <p>透過 <a href="https://www.ecpay.com.tw" target="_blank">綠界科技</a> 安全付款 · 支援信用卡 / ATM / 超商</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563EB">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="找好房">
+  <meta name="description" content="輸入物件位置，自動評估周邊便利設施與嫌惡設施，給出購買建議評分">
+  <title>找好房 - 買房評分工具</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS (local) -->
+  <link rel="stylesheet" href="lib/leaflet.css">
+
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-content">
+      <span class="app-icon" aria-hidden="true">🏠</span>
+      <h1 class="app-title">找好房</h1>
+      <span class="app-subtitle">買房評分工具</span>
+    </div>
+  </header>
+
+
+  <!-- ── Main Content ───────────────────────────────────────────────────── -->
+  <main class="tab-content">
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 評估 Tab                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-evaluate" role="tabpanel">
+
+      <!-- Input Card -->
+      <div class="card" id="input-section">
+        <h2 class="section-title" style="margin-bottom:14px">輸入物件資訊</h2>
+
+        <div class="coord-display" id="coord-display" style="display:none">
+          <span class="coord-label">已解析座標：</span>
+          <span id="coord-text"></span>
+        </div>
+
+        <div class="form-group">
+          <label>在地圖上點選物件位置</label>
+          <div id="map-picker" class="map-picker" aria-label="地圖選點"></div>
+          <small class="hint">點擊地圖上的位置來設定物件座標，可縮放地圖精確定位</small>
+        </div>
+
+        <div class="form-group">
+          <label>手動輸入座標</label>
+          <div class="coord-inputs">
+            <input type="number" id="manual-lat" name="latitude" aria-label="緯度" placeholder="例如：25.033964…" step="0.000001"
+              min="-90" max="90" inputmode="decimal" autocomplete="off">
+            <input type="number" id="manual-lng" name="longitude" aria-label="經度" placeholder="例如：121.564468…" step="0.000001"
+              min="-180" max="180" inputmode="decimal" autocomplete="off">
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="start-evaluation">
+          開始評估
+        </button>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results-section" style="display:none">
+
+        <!-- Score Summary -->
+        <div class="card score-card" id="score-summary" style="display:none">
+          <div class="score-circle" id="score-circle">
+            <span class="score-number" id="score-number">--</span>
+            <span class="score-label">分</span>
+          </div>
+          <div class="score-info">
+            <div class="recommendation" id="recommendation">計算中…</div>
+            <div class="property-name-display" id="property-name-display"></div>
+          </div>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="card" id="progress-card" style="display:none">
+          <div class="progress-title">正在解析周邊設施與嫌惡物件…</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+          </div>
+          <div class="progress-text" id="progress-text">
+            <span id="progress-desc" class="progress-desc">準備中</span>
+            <span id="progress-time-left" style="margin-left: 6px; opacity: 0.75; font-size: 0.72rem;"></span>
+          </div>
+
+          <div class="ad-hint-text" style="font-size: 0.76rem; color: var(--text-muted); text-align: center; margin-top: 10px; margin-bottom: -4px;">
+            💡 分析期間，可以順手點擊下方廣告，或 <span class="donate-link" id="progress-donate-btn" style="color: var(--accent); text-decoration: underline; font-weight: 600; cursor: pointer;">Donate 支持我們</span> 請作者喝杯咖啡 ☕
+          </div>
+
+          <!-- 智慧加載廣告 -->
+          <div class="ad-loading-box" style="margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 16px;">
+            <div class="ad-header-row" style="justify-content: space-between; margin-bottom: 8px;">
+              <span class="ad-badge">SPONSORED</span>
+              <span class="ad-countdown" id="ad-countdown" style="font-size: 0.72rem; font-weight: 700; color: var(--accent);">AI 分析中 (3s)</span>
+            </div>
+            <div class="ad-loading-content" style="display: flex; gap: 12px; margin: 8px 0 12px;">
+              <img src="/test-ad.png" alt="Sponsor Project" style="width: 76px; height: 76px; border-radius: var(--radius-sm); object-fit: cover;">
+              <div class="ad-loading-details" style="flex: 1; min-width: 0;">
+                <div class="ad-title-text" style="font-size: 0.85rem; font-weight: 700; color: var(--text);">微風山莊 - 智慧景觀新成屋</div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-top: 4px;">分析等待期間，看看為您推薦的優質建案。近捷運、首付僅需 50 萬起！</p>
+              </div>
+            </div>
+            <a href="https://example.com" target="_blank" class="btn btn-secondary btn-sm btn-full ad-action-btn">查看建案詳情</a>
+          </div>
+        </div>
+
+        <!-- Results Map -->
+        <div class="card" id="results-map-card" style="display:none">
+          <h3 class="section-title" style="margin-bottom:10px">位置地圖</h3>
+          <div id="results-map" class="results-map"></div>
+        </div>
+
+        <!-- Convenience Facilities Results -->
+        <div class="card" id="convenience-results" style="display:none">
+          <h3 class="section-title">
+            <span>便利設施評分</span>
+            <span class="section-score" id="convenience-total-score"></span>
+          </h3>
+          <div id="convenience-list"></div>
+        </div>
+
+        <!-- Nuisance Facilities Results -->
+        <div class="card" id="nuisance-results" style="display:none">
+          <h3 class="section-title">
+            <span>嫌惡設施評分</span>
+            <span class="section-score" id="nuisance-total-score"></span>
+          </h3>
+          <div id="nuisance-list"></div>
+        </div>
+
+        <!-- Custom Conditions Results -->
+        <div class="card" id="conditions-results" style="display:none">
+          <h3 class="section-title">附加條件</h3>
+          <div id="conditions-list"></div>
+          <p class="conditions-hint">勾選符合此物件的條件，評分會即時更新</p>
+        </div>
+
+        <!-- Market Appreciation Indicator -->
+        <div class="card" id="market-results" style="display:none">
+          <h3 class="section-title">
+            <span>房價增值指標</span>
+            <span class="section-score" id="market-total-score"></span>
+          </h3>
+          <div id="market-form"></div>
+        </div>
+
+      </div>
+      <!-- /results-section -->
+
+      <!-- 評估分頁常駐廣告 -->
+      <div class="card ad-card-evaluate" style="margin-top: 16px;">
+        <div class="ad-header-row">
+          <span class="ad-badge">SPONSORED</span>
+          <span class="ad-title-text">極緻光域 - 智能景觀邸</span>
+        </div>
+        <div class="ad-image-container">
+          <img src="/test-ad.png" alt="Sponsor Project" class="ad-image">
+        </div>
+        <p class="ad-description">採用最新防震技術與永續建築工法，頂樓無邊際泳池，坐擁信義區絕美天際線。</p>
+        <a href="https://example.com" target="_blank" class="btn btn-primary btn-sm btn-full ad-action-btn">了解更多</a>
+      </div>
+
+    </div>
+    <!-- /tab-evaluate -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 設施 Tab                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-facilities" role="tabpanel">
+
+      <!-- Convenience Facilities -->
+      <div class="card">
+        <div class="section-header">
+          <h3 class="section-title" style="margin-bottom:0">便利設施</h3>
+          <button class="btn btn-sm btn-primary" id="add-convenience">+ 新增</button>
+        </div>
+        <p class="section-desc">
+          距離越近越好。實際距離在「理想距離」內得滿分，超過則依比例遞減。
+        </p>
+        <div id="convenience-facilities-list"></div>
+      </div>
+
+      <!-- Nuisance Facilities -->
+      <div class="card">
+        <div class="section-header">
+          <h3 class="section-title" style="margin-bottom:0">嫌惡設施</h3>
+          <button class="btn btn-sm btn-danger" id="add-nuisance">+ 新增</button>
+        </div>
+        <p class="section-desc">
+          距離越遠越好。實際距離小於「最小安全距離」則扣分，大於則加分。
+        </p>
+        <div id="nuisance-facilities-list"></div>
+      </div>
+
+    </div>
+    <!-- /tab-facilities -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 條件 Tab                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-conditions" role="tabpanel">
+
+      <div class="card">
+        <div class="section-header">
+          <h3 class="section-title" style="margin-bottom:0">附加評分條件</h3>
+          <button class="btn btn-sm btn-primary" id="add-condition">+ 新增</button>
+        </div>
+        <p class="section-desc">
+          自訂加分或扣分條件。評估時手動確認物件是否符合，符合即套用分數。
+          正分為加分條件，負分為扣分條件。
+        </p>
+        <div id="conditions-settings-list"></div>
+      </div>
+
+    </div>
+    <!-- /tab-conditions -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 歷史 Tab                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-history" role="tabpanel">
+      <div id="history-list">
+        <div class="empty-state">
+          <span class="empty-icon" aria-hidden="true">📋</span>
+          <p>尚無評估紀錄</p>
+          <p class="empty-hint">在「評估」頁面完成物件評估並儲存後，紀錄將顯示於此</p>
+        </div>
+      </div>
+    </div>
+    <!-- /tab-history -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 關於 Tab                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-about" role="tabpanel">
+      <!-- Story Card -->
+      <div class="card about-hero-card">
+        <div class="about-ocean-bg" aria-hidden="true">🌊</div>
+        <h2 class="about-title">蔚藍承諾 🌊</h2>
+        <p class="about-subtitle">「找好房」工具的設計理念與故事</p>
+        
+        <div class="about-story-text">
+          <p>
+            <strong>為什麼會有這個工具？</strong><br>
+            買房是人生最重大且令人焦慮的決定。作者在尋找合適房子的過程中，曾在多個地圖與實價登錄系統間疲於奔命。為了讓每個人都能用一鍵評估周圍的環境品質，避開嫌惡設施，「找好房」誕生了。
+          </p>
+          <p>
+            <strong>我們的無廣告、純淨承諾</strong><br>
+            我們堅持不放任何干擾閱讀的滿版廣告，不追蹤任何隱私。本工具完全由個人興趣與開源社群力量維持。
+          </p>
+          <p class="donate-declaration">
+            📢 <strong>認同我們的工作嗎？</strong><br>
+            請給予我們一些小小的支持和鼓勵！<br><br>
+            除了寫程式，<strong>作者也是一名熱愛潛水與大海的旅人</strong>。在無數次下潛進入蔚藍的過程中，我們親眼目睹了海洋生態與海龜所面臨的塑料威脅。因此，我們承諾將<strong>所有收到贊助款項的 30%</strong> 捐獻給<strong>海洋保育相關慈善機構</strong>。您的每一分支持，不僅是在溫暖創作者，更是與我們一起，為保護這片美麗的大海多盡一份心力。
+          </p>
+        </div>
+        
+        <button class="btn btn-primary btn-full" id="about-donate-btn" style="margin-top: 20px; gap: 8px;">
+          <span>☕</span> 贊助我們 & 支持海洋保育
+        </button>
+      </div>
+
+      <!-- Ocean Impact Dashboard -->
+      <div class="card ocean-impact-card">
+        <h3 class="section-title">🌊 海洋保育數據看板</h3>
+        
+        <div class="ocean-stats-grid">
+          <div class="ocean-stat-item">
+            <div class="ocean-stat-num" id="ocean-total-donated">NT$ 15,420</div>
+            <div class="ocean-stat-label">累計捐助海洋機構金額</div>
+          </div>
+          <div class="ocean-stat-item">
+            <div class="ocean-stat-num" id="ocean-turtles-saved">38 隻</div>
+            <div class="ocean-stat-label">守護海龜免受塑料威脅 🐢</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donors Wall (Marquee / Live wall) -->
+      <div class="card donors-wall-card">
+        <h3 class="section-title">💖 感謝天使贊助人名單</h3>
+        <div class="donors-list-container">
+          <div class="donors-list-scroll" id="donors-list">
+            <!-- Dynamic elements will be inserted here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Receipts -->
+      <div class="card receipts-card">
+        <h3 class="section-title">📜 真實捐款收據與證明</h3>
+        <p class="receipts-desc">資金百分之百透明，所有捐贈皆可依編號與機構查證：</p>
+        
+        <div class="receipts-table-wrapper">
+          <table class="receipts-table">
+            <thead>
+              <tr>
+                <th>捐款日期</th>
+                <th>捐款機構</th>
+                <th>金額 (TWD)</th>
+                <th>收據證明編號</th>
+              </tr>
+            </thead>
+            <tbody id="receipts-list">
+              <!-- Dynamic receipt rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- /tab-about -->
+
+  </main>
+
+  <!-- ── Bottom Controls Sheet (Search & Tabs) ────────────────────────── -->
+  <div class="bottom-controls-wrapper">
+    <div class="bottom-search-bar">
+      <input type="text" id="property-name" name="address" placeholder="例如：台北市大安區新生南路二段1號…" aria-label="輸入地址或物件名稱" autocomplete="off">
+      <button class="btn btn-primary" id="search-address-btn" type="button">定位</button>
+    </div>
+    <div class="bottom-search-hint">
+      支援地址/地標搜尋，或直接貼入 Google Maps 連結進行定位
+    </div>
+    
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" data-tab="evaluate" role="tab">評估</button>
+      <button class="tab-btn" data-tab="facilities" role="tab">設施</button>
+      <button class="tab-btn" data-tab="conditions" role="tab">條件</button>
+      <button class="tab-btn" data-tab="history" role="tab">歷史</button>
+      <button class="tab-btn" data-tab="about" role="tab">關於</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ── Modal ───────────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">標題</h3>
+      <button class="modal-close" id="modal-close" aria-label="關閉">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- ── Toast Container ─────────────────────────────────────────────────────── -->
+<div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+<!-- Leaflet JS (local) -->
+<script src="lib/leaflet.js"></script>
+
+<!-- App (ES Module) -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

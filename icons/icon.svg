@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#2563EB"/>
+  <!-- House shape -->
+  <polygon points="256,80 460,240 420,240 420,420 296,420 296,310 216,310 216,420 92,420 92,240 52,240" fill="white"/>
+  <!-- Door -->
+  <rect x="216" y="310" width="80" height="110" fill="#2563EB"/>
+  <!-- Window left -->
+  <rect x="120" y="280" width="60" height="50" rx="4" fill="#2563EB"/>
+  <!-- Window right -->
+  <rect x="332" y="280" width="60" height="50" rx="4" fill="#2563EB"/>
+  <!-- Checkmark circle -->
+  <circle cx="380" cy="380" r="80" fill="#10B981"/>
+  <polyline points="345,380 368,403 415,356" fill="none" stroke="white" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

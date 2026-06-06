@@ -1,0 +1,31 @@
+{
+  "name": "找好房 - 買房評分工具",
+  "short_name": "找好房",
+  "description": "輸入物件位置，自動評估周邊便利設施與嫌惡設施，給出購買建議評分",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F1F5F9",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "screenshots": []
+}
