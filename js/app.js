@@ -1607,7 +1607,7 @@ function showDonateModal() {
   const bodyHTML = `
     <div class="donate-modal-container">
       <p class="donate-intro">
-        這個評估工具完全免費，沒有廣告或數據追蹤。<br>
+        這個評估工具完全免費，維持乾淨不干擾的版面，且不追蹤任何隱私數據。<br>
         如果您覺得有幫到您，歡迎小額打賞支持作者，維持地圖與算力伺服器運行！💖
       </p>
 
