@@ -1612,7 +1612,7 @@ function showDonateModal() {
       </p>
 
       <div class="donate-options-grid">
-        <div class="donate-option-card active" id="donate-opt-bmc">
+        <div class="donate-option-card active" id="donate-opt-ecpay">
           <div class="donate-option-icon">💳</div>
           <div class="donate-option-title">線上刷卡 / 行動支付</div>
           <div class="donate-option-desc">免註冊 / 支援 Apple Pay</div>
@@ -1633,7 +1633,7 @@ function showDonateModal() {
 
       <div class="donate-panel-container">
         <!-- ECPay -->
-        <div class="donate-detail-panel active" id="donate-panel-bmc">
+        <div class="donate-detail-panel active" id="donate-panel-ecpay">
           <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:12px; line-height: 1.5;">
             透過綠界科技安全付款，支援 Apple Pay、Google Pay、國內外信用卡：
           </p>
@@ -1687,7 +1687,7 @@ function showDonateModal() {
   ]);
 
   // 綁定動態點擊事件來切換 Panel
-  const options = ['bmc', 'jk', 'lp'];
+  const options = ['ecpay', 'jk', 'lp'];
   options.forEach(opt => {
     document.getElementById(`donate-opt-${opt}`).addEventListener('click', () => {
       options.forEach(o => {
