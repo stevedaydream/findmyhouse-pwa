@@ -1613,9 +1613,9 @@ function showDonateModal() {
 
       <div class="donate-options-grid">
         <div class="donate-option-card active" id="donate-opt-bmc">
-          <div class="donate-option-icon">☕</div>
-          <div class="donate-option-title">信用卡 / 行動支付</div>
-          <div class="donate-option-desc">美金 / 支援 Apple Pay</div>
+          <div class="donate-option-icon">💳</div>
+          <div class="donate-option-title">線上刷卡 / 行動支付</div>
+          <div class="donate-option-desc">免註冊 / 支援 Apple Pay</div>
         </div>
         
         <div class="donate-option-card" id="donate-opt-jk">
@@ -1632,14 +1632,22 @@ function showDonateModal() {
       </div>
 
       <div class="donate-panel-container">
-        <!-- BMC -->
+        <!-- ECPay -->
         <div class="donate-detail-panel active" id="donate-panel-bmc">
           <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:12px; line-height: 1.5;">
-            支援 Apple Pay、Google Pay 與國際信用卡，免註冊即可快速完成打賞。
+            透過綠界科技安全付款，支援 Apple Pay、Google Pay、國內外信用卡：
           </p>
-          <a href="https://www.buymeacoffee.com/YOUR_BMC_USERNAME" target="_blank" class="btn btn-primary btn-full" style="gap:8px; text-decoration: none;">
-            <span>☕</span> 前往 Buy Me a Coffee 頁面
-          </a>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <a href="https://p.ecpay.com.tw/E6CB764" target="_blank" class="btn btn-primary btn-full" style="gap:8px; text-decoration: none; justify-content: center; align-items: center; display: flex;">
+              <span>☕</span> 請一杯咖啡 (NT$ 50)
+            </a>
+            <a href="https://p.ecpay.com.tw/EFC53E1" target="_blank" class="btn btn-primary btn-full" style="gap:8px; text-decoration: none; justify-content: center; align-items: center; display: flex;">
+              <span>🍱</span> 請吃一個便當 (NT$ 150)
+            </a>
+            <a href="https://p.ecpay.com.tw/F01156E" target="_blank" class="btn btn-primary btn-full" style="gap:8px; text-decoration: none; justify-content: center; align-items: center; display: flex;">
+              <span>🎁</span> 大力支持作者 (NT$ 500)
+            </a>
+          </div>
         </div>
 
         <!-- Jieko -->
