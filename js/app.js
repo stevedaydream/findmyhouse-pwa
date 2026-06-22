@@ -49,6 +49,7 @@ let leafletMarker = null;
 let resultsMap = null;
 let poiMarkers = {};
 let activePropertyCoords = null;
+let activePolyline = null;
 let danmakuInterval = null;
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -575,65 +576,111 @@ function renderResults(results) {
 }
 
 function renderResultsMap(propertyLat, propertyLng, results) {
+  const pLat = parseFloat(propertyLat);
+  const pLng = parseFloat(propertyLng);
+  if (isNaN(pLat) || isNaN(pLng)) {
+    console.error("Invalid property coordinates:", propertyLat, propertyLng);
+    return;
+  }
+
+  // 1. Show the card first so it has layout
   document.getElementById('results-map-card').style.display = 'block';
 
+  // 2. Recreate the map container DOM element to completely clear any previous Leaflet instances and ID bindings
+  const oldContainer = document.getElementById('results-map');
+  if (oldContainer) {
+    const parent = oldContainer.parentNode;
+    const newContainer = document.createElement('div');
+    newContainer.id = 'results-map';
+    newContainer.className = 'results-map';
+    parent.replaceChild(newContainer, oldContainer);
+  }
+
+  // 3. Clean up reference if exists
   if (resultsMap) {
-    resultsMap.remove();
+    try {
+      resultsMap.remove();
+    } catch (e) {
+      console.warn("Error removing resultsMap:", e);
+    }
     resultsMap = null;
   }
 
   // Reset POI states
   poiMarkers = {};
-  activePropertyCoords = { lat: propertyLat, lng: propertyLng };
-  if (activePolyline) {
-    activePolyline = null;
+  activePropertyCoords = { lat: pLat, lng: pLng };
+  if (activePolyline && resultsMap) {
+    try {
+      resultsMap.removeLayer(activePolyline);
+    } catch (e) {}
   }
+  activePolyline = null;
 
-  resultsMap = L.map('results-map').setView([propertyLat, propertyLng], 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19
-  }).addTo(resultsMap);
+  // 4. Initialize the map
+  try {
+    resultsMap = L.map('results-map').setView([pLat, pLng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(resultsMap);
 
-  // Property marker
-  L.marker([propertyLat, propertyLng], {
-    icon: L.divIcon({
-      className: 'custom-marker',
-      html: '<div class="marker-pin">🏠</div>',
-      iconSize: [36, 36],
-      iconAnchor: [18, 36]
-    })
-  }).addTo(resultsMap).bindPopup('<strong>物件位置</strong>');
-
-  // POI markers
-  const allPOI = [...(results.convenience || []), ...(results.nuisance || [])];
-  const bounds = [[propertyLat, propertyLng]];
-
-  allPOI.forEach(r => {
-    if (r.poiLat != null && r.poiLng != null) {
-      const bg = r.score >= 0 ? '#059669' : '#DC2626';
-      const markerKey = `${r.name}-${r.poiLat}-${r.poiLng}`;
-      const marker = L.marker([r.poiLat, r.poiLng], {
-        icon: L.divIcon({
-          className: '',
-          html: `<div class="poi-marker-icon" style="background:${bg}">${r.icon}</div>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        })
+    // Property marker
+    L.marker([pLat, pLng], {
+      icon: L.divIcon({
+        className: 'custom-marker',
+        html: '<div class="marker-pin">🏠</div>',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36]
       })
-        .bindPopup(`<strong>${r.icon} ${r.name}</strong><br>距離：${formatDistance(r.actualDistance)}`)
-        .addTo(resultsMap);
-      
-      poiMarkers[markerKey] = marker;
-      bounds.push([r.poiLat, r.poiLng]);
-    }
-  });
+    }).addTo(resultsMap).bindPopup('<strong>物件位置</strong>');
 
-  if (bounds.length > 1) {
-    resultsMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+    // POI markers
+    const allPOI = [...(results.convenience || []), ...(results.nuisance || [])];
+    const bounds = [[pLat, pLng]];
+
+    allPOI.forEach(r => {
+      if (r.poiLat != null && r.poiLng != null) {
+        const lat = parseFloat(r.poiLat);
+        const lng = parseFloat(r.poiLng);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const bg = r.score >= 0 ? '#059669' : '#DC2626';
+        const markerKey = `${r.name}-${lat}-${lng}`;
+        const marker = L.marker([lat, lng], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div class="poi-marker-icon" style="background:${bg}">${r.icon}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          })
+        })
+          .bindPopup(`<strong>${r.icon} ${r.name}</strong><br>距離：${formatDistance(r.actualDistance)}`)
+          .addTo(resultsMap);
+        
+        poiMarkers[markerKey] = marker;
+        bounds.push([lat, lng]);
+      }
+    });
+
+    // 5. Run fitBounds and invalidateSize with slight delays to ensure the map container has correct layout dimensions
+    setTimeout(() => {
+      if (!resultsMap) return;
+      resultsMap.invalidateSize();
+      if (bounds.length > 1) {
+        resultsMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+      }
+    }, 100);
+
+    // Secondary backup call to invalidateSize to ensure correct size rendering on slow devices
+    setTimeout(() => {
+      if (resultsMap) {
+        resultsMap.invalidateSize();
+      }
+    }, 500);
+
+  } catch (err) {
+    console.error("Leaflet resultsMap error:", err);
   }
-
-  setTimeout(() => resultsMap.invalidateSize(), 200);
 }
 
 async function autoFetchMarketData(lat, lng) {
